@@ -7,18 +7,18 @@ import time
 drone = Drone()
 drone.pair()
 Drone.set_drone_LED(r=0, g=0, b=0, brightness=100, self=drone)
-LookingForWall = False
 
 ListOfCommandsStr = ["take off","forward","back","left","right","up","down","flip","land","abort","square","sway","triangle","circle","spiral","negative","positive","turn around","record","begin"]
 ListOfCommandsMed = ["DroneTakeoff(RecordingOn, RecordingMoves)","DroneForward(RecordingOn,RecordingMoves)","DroneBackward(RecordingOn, RecordingMoves)","DroneLeftward(RecordingOn,RecordingMoves)","DroneRightward(RecordingOn, RecordingMoves)","DroneUpward(RecordingOn, RecordingMoves)","DroneDownward(RecordingOn, RecordingMoves)","DroneFlip(RecordingOn, RecordingMoves)","DroneLand(RecordingOn, RecordingMoves)","DroneEmergencyStop(RecordingOn, RecordingMoves)","DroneSquare(RecordingOn, RecordingMoves)","DroneSway(RecordingOn, RecordingMoves)","DroneTriangle(RecordingOn, RecordingMoves)","DroneCircle(RecordingOn, RecordingMoves)","DroneSpiral(RecordingOn, RecordingMoves)","DroneTurnLeft(RecordingOn, RecordingMoves)","DroneTurnRight(RecordingOn, RecordingMoves)","DroneTurnAround(RecordingOn, RecordingMoves)","DroneRecord()","DroneBeginRecording(RecordingMoves)"]
 RecordingMoves = []
 RecordingOn = False
 
-
 def DroneForward(RecordingOn,RecordingMoves):
     print("drone move forward")
-    drone.move_forward(distance=3, units="ft", speed=1)
-    drone.reset_move()
+    for i in range(30):
+        drone.move_forward(distance=3, units="cm", speed=1)
+        drone.reset_move()
+        DroneCheckForWall()
     if RecordingOn:
         RecordingMoves.append("forward")
         print("movement added to record: forward")
@@ -37,8 +37,10 @@ def DroneBackward(RecordingOn,RecordingMoves):
 
 def DroneLeftward(RecordingOn,RecordingMoves):
     print("drone moves left")
-    drone.move_left(distance=3, units="ft", speed=1)
-    drone.reset_move()
+    for i in range(30):
+        drone.move_left(distance=3, units="cm", speed=1)
+        drone.reset_move()
+        DroneCheckForWall()
     if RecordingOn:
         RecordingMoves.append("left")
         print("movement added to record: left")
@@ -47,8 +49,10 @@ def DroneLeftward(RecordingOn,RecordingMoves):
 
 def DroneRightward(RecordingOn,RecordingMoves):
     print("drone moves right")
-    drone.move_right(distance=3, units="ft", speed=1)
-    drone.reset_move()
+    for i in range(30):
+        drone.move_right(distance=3, units="cm", speed=1)
+        drone.reset_move()
+        DroneCheckForWall()
     if RecordingOn:
         RecordingMoves.append("right")
         print("movement added to record: right")
@@ -57,9 +61,11 @@ def DroneRightward(RecordingOn,RecordingMoves):
 
 def DroneUpward(RecordingOn,RecordingMoves):
     print("drone moves up")
-    drone.set_throttle(100)
-    drone.move(1)
-    drone.reset_move()
+    for i in range(10):
+        drone.set_throttle(100)
+        drone.move(0.1)
+        drone.reset_move()
+        DroneCheckForWall()
     if RecordingOn:
         RecordingMoves.append("up")
         print("movement added to record: up")
@@ -67,9 +73,11 @@ def DroneUpward(RecordingOn,RecordingMoves):
 
 def DroneDownward(RecordingOn,RecordingMoves):
     print("drone moves down")
-    drone.set_throttle(-100)
-    drone.move(1)
-    drone.reset_move()
+    for i in range(10):
+        drone.set_throttle(-100)
+        drone.move(0.1)
+        drone.reset_move()
+        DroneCheckForWall()
     if RecordingOn:
         RecordingMoves.append("down")
         print("movement added to record: down")
@@ -83,11 +91,10 @@ def DroneFlip(RecordingOn,RecordingMoves):
         RecordingMoves.append("flip")
         print("movement added to record: flip")
     time.sleep(2)
+    DroneCheckForWall()
 
 
 def DroneLand(RecordingOn,RecordingMoves):
-    global LookingForWall
-    LookingForWall = False
     print("drone land")
     drone.land()
     drone.reset_move()
@@ -97,19 +104,16 @@ def DroneLand(RecordingOn,RecordingMoves):
 
 
 def DroneTakeoff(RecordingOn,RecordingMoves):
-    global LookingForWall
-    LookingForWall = True
     print("drone takeoff")
     drone.takeoff()
     drone.reset_move()
     if RecordingOn:
         RecordingMoves.append("take off")
         print("movement added to record: takeoff")
+    DroneCheckForWall()
 
 
 def DroneEmergencyStop(RecordingOn,RecordingMoves):
-    global LookingForWall
-    LookingForWall = False
     print("drone EmergencyStop")
     Drone.set_drone_LED(r=255, g=0, b=0, brightness=100, self=drone)
     drone.emergency_stop()
@@ -129,6 +133,7 @@ def DroneSquare(RecordingOn,RecordingMoves):
     if RecordingOn:
         RecordingMoves.append("square")
         print("movement added to record: Square")
+    DroneCheckForWall()
 
 
 def DroneSway(RecordingOn,RecordingMoves):
@@ -138,6 +143,7 @@ def DroneSway(RecordingOn,RecordingMoves):
     if RecordingOn:
         RecordingMoves.append("sway")
         print("movement added to record: Sway")
+    DroneCheckForWall()
 
 
 def DroneTriangle(RecordingOn,RecordingMoves):
@@ -147,6 +153,7 @@ def DroneTriangle(RecordingOn,RecordingMoves):
     if RecordingOn:
         RecordingMoves.append("triangle")
         print("movement added to record: Triangle")
+    DroneCheckForWall()
 
 
 def DroneCircle(RecordingOn,RecordingMoves):
@@ -156,6 +163,7 @@ def DroneCircle(RecordingOn,RecordingMoves):
     if RecordingOn:
         RecordingMoves.append("circle")
         print("movement added to record: Circle")
+    DroneCheckForWall()
 
 
 def DroneSpiral(RecordingOn,RecordingMoves):
@@ -165,6 +173,7 @@ def DroneSpiral(RecordingOn,RecordingMoves):
     if RecordingOn:
         RecordingMoves.append("spiral")
         print("movement added to record: Spiral")
+    DroneCheckForWall()
 
 
 def DroneTurnLeft(RecordingOn,RecordingMoves):
@@ -174,6 +183,7 @@ def DroneTurnLeft(RecordingOn,RecordingMoves):
     if RecordingOn:
         RecordingMoves.append("negative")
         print("movement added to record: turn left")
+    DroneCheckForWall()
 
 
 def DroneTurnRight(RecordingOn,RecordingMoves):
@@ -183,6 +193,7 @@ def DroneTurnRight(RecordingOn,RecordingMoves):
     if RecordingOn:
         RecordingMoves.append("positive")
         print("movement added to record: turn right")
+    DroneCheckForWall()
 
 
 def DroneTurnAround(RecordingOn,RecordingMoves):
@@ -192,6 +203,7 @@ def DroneTurnAround(RecordingOn,RecordingMoves):
     if RecordingOn:
         RecordingMoves.append("turn around")
         print("movement added to record: turn around")
+    DroneCheckForWall()
 
 
 def DroneRecord():
@@ -220,8 +232,6 @@ def DroneBeginRecording(RecordingMoves):
 
 
 def EmergencyKey(key):
-    global LookingForWall
-    LookingForWall = False
     if key == Key.space:
         Drone.set_drone_LED(r=255, g=0, b=0, brightness=100, self=drone)
         drone.emergency_stop()
@@ -230,12 +240,16 @@ def EmergencyKey(key):
             time.sleep(0.5)
 
 
-def DroneDectectingWall(self):
-    global LookingForWall
-    while True:
-        while LookingForWall:
-            if drone.detect_wall() == True:
-                drone.move_backward(distance=10)
+def DroneCheckForWall():
+    CheckWall = True
+    while CheckWall:
+        if drone.detect_wall(distance=45.24):
+            Drone.set_drone_LED(r=255, g=255, b=0, brightness=100, self=drone)
+            drone.move_backward(distance=3, units="cm", speed = 1)
+            drone.reset_move()
+        else:
+            CheckWall = False
+            Drone.set_drone_LED(r=0, g=255, b=0, brightness=100, self=drone)
 
 
 def ListeningVoice(self):
@@ -260,14 +274,11 @@ def ListeningVoice(self):
 
 t1 = threading.Thread(target=EmergencyKey, args=(10,))
 t2 = threading.Thread(target=ListeningVoice, args=(10,))
-t3 = threading.Thread(target=DroneDectectingWall, args=(10,))
 
 t1.start()
 t2.start()
-t3.start()
 
 with Listener(on_press=EmergencyKey) as listener:
     listener.join()
 
-#dectect wall needs to be tested
 #try out keep distance
