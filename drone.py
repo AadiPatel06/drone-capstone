@@ -21,9 +21,9 @@ def DroneAttack():
 
 def DroneForward(RecordingOn,RecordingMoves):
     print("drone move forward")
-    for i in range(40):
-        drone.move_forward(distance=3, units="cm", speed=3)
-        #DroneCheckForWall()
+    for i in range(30):
+        drone.move_forward(distance=3, units="cm", speed=2)
+        DroneCheckForWall()
     if RecordingOn:
         RecordingMoves.append("forward")
         print("movement added to record: forward")
@@ -31,9 +31,9 @@ def DroneForward(RecordingOn,RecordingMoves):
 
 def DroneBackward(RecordingOn,RecordingMoves):
     print("drone move backward")
-    for i in range(40):
-        drone.move_backward(distance=3, units="cm", speed=3)
-        #DroneCheckForWall()
+    for i in range(30):
+        drone.move_backward(distance=3, units="cm", speed=2)
+        DroneCheckForWall()
     if RecordingOn:
         RecordingMoves.append("back")
         print("movement added to record: backward")
@@ -41,9 +41,9 @@ def DroneBackward(RecordingOn,RecordingMoves):
 
 def DroneLeftward(RecordingOn,RecordingMoves):
     print("drone moves left")
-    for i in range(40):
-        drone.move_left(distance=3, units="cm", speed=3)
-        #DroneCheckForWall()
+    for i in range(30):
+        drone.move_left(distance=3, units="cm", speed=2)
+        DroneCheckForWall()
     if RecordingOn:
         RecordingMoves.append("left")
         print("movement added to record: left")
@@ -51,9 +51,9 @@ def DroneLeftward(RecordingOn,RecordingMoves):
 
 def DroneRightward(RecordingOn,RecordingMoves):
     print("drone moves right")
-    for i in range(40):
-        drone.move_right(distance=3, units="cm", speed=3)
-        #DroneCheckForWall()
+    for i in range(30):
+        drone.move_right(distance=3, units="cm", speed=2)
+        DroneCheckForWall()
     if RecordingOn:
         RecordingMoves.append("right")
         print("movement added to record: right")
@@ -62,9 +62,11 @@ def DroneRightward(RecordingOn,RecordingMoves):
 def DroneUpward(RecordingOn,RecordingMoves):
     print("drone moves up")
     for i in range(12):
-        drone.set_throttle(100)
+        drone.set_throttle(50 )
         drone.move(0.1)
-        # DroneCheckForWall()
+        if drone.detect_wall(distance=60):
+            drone.reset_move()
+            DroneCheckForWall()
     drone.reset_move()
     if RecordingOn:
         RecordingMoves.append("up")
@@ -74,9 +76,11 @@ def DroneUpward(RecordingOn,RecordingMoves):
 def DroneDownward(RecordingOn,RecordingMoves):
     print("drone moves down")
     for i in range(12):
-        drone.set_throttle(-100)
+        drone.set_throttle(-50)
         drone.move(0.1)
-        # DroneCheckForWall()
+        if drone.detect_wall(distance=60):
+            drone.reset_move()
+            DroneCheckForWall()
     drone.reset_move()
     if RecordingOn:
         RecordingMoves.append("down")
@@ -194,22 +198,24 @@ def DroneRecord():
     print("recording movements now")
     RecordingOn = True
     RecordingMoves = []
+    Drone.set_drone_LED(r=100, g=255, b=200, brightness=100, self=drone)
+    time.sleep(2)
+    Drone.set_drone_LED(r=0, g=0, b=0, brightness=100, self=drone)
 
 
 def DroneBeginRecording(RecordingMoves):
     global RecordingOn
     print("drone recording playing")
     print(RecordingMoves)
+    RecordingOn = False
     for a in range(len(RecordingMoves)):
         for i in range(len(ListOfCommandsStr)):
-            RecordingOn = False
             if RecordingMoves[a] in ListOfCommandsStr[i]:
-                drone.reset_trim()
-                drone.reset_move()
-                drone.set_motor_speed(0,0,0,0)
+                Drone.set_drone_LED(r=0, g=255, b=0, brightness=100, self=drone)
                 eval(ListOfCommandsMed[i])
                 time.sleep(3)
-            RecordingOn = True
+                Drone.set_drone_LED(r=0, g=0, b=0, brightness=100, self=drone)
+    RecordingOn = True
 
 
 def DroneCheckForWall():
@@ -217,34 +223,42 @@ def DroneCheckForWall():
     while CheckWall:
         if drone.get_flight_state() == ModeFlight.Ready:
             CheckWall = False
-        elif drone.detect_wall(distance=45.24):
-            drone.move_backward(distance=3, units="cm", speed = 3)
+        elif drone.detect_wall(distance=60):
+            print("wall dectected in range")
+            Drone.set_drone_LED(r=255, g=255, b=0, brightness=100, self=drone)
+            drone.move_backward(distance=2, units="cm", speed = 3)
         else:
             CheckWall = False
+            Drone.set_drone_LED(r=0, g=255, b=0, brightness=100, self=drone)
 
 
 def ListeningVoice(self):
     recording = sr.Recognizer()
     mic = sr.Microphone()
     while True:
-        #DroneCheckForWall()
+        DroneCheckForWall()
         with mic as source:
+            Drone.set_drone_LED(r=255, g=60, b=0, brightness=100, self=drone)
             print("speak")
             audio = recording.record(source, duration=2.5)
             recording.energy_threshold = 500
             recording.pause_threshold = 0.5
         text = str(recording.recognize_google(audio, language='en-IN', show_all=True)).lower()
         print(text)
+        Drone.set_drone_LED(r=0, g=0, b=0, brightness=100, self=drone)
         for i in range(len(ListOfCommandsStr)):
            if ListOfCommandsStr[i] in text:
-                eval(ListOfCommandsMed[i])
-                break
+               Drone.set_drone_LED(r=0, g=255, b=0, brightness=100, self=drone)
+               eval(ListOfCommandsMed[i])
+               Drone.set_drone_LED(r=0, g=0, b=0, brightness=100, self=drone)
 
 
 def EmergencyKey(key):
     if key == Key.space:
+        Drone.set_drone_LED(r=255, g=0, b=0, brightness=100, self=drone)
         drone.emergency_stop()
         for i in range(4):
+            Drone.set_drone_LED(r=255, g=0, b=0, brightness=100, self=drone)
             time.sleep(0.5)
 
 
