@@ -15,6 +15,15 @@ ListOfCommandsMed = ["DroneTakeoff()","DroneForward()","DroneBackward()","DroneL
 
 def DroneAttack():
     print("drone is attacking")
+    while True:
+        time.sleep(0.1)
+        if drone.get_front_range(unit="in") > 24:
+            drone.turn(0.2, power=100)
+        else:
+            break
+    for i in range(24):
+        drone.move_forward(distance=2, units="in", speed=2)
+    time.sleep(2)
 
 
 def DroneForward():
@@ -83,6 +92,8 @@ def DroneLand():
     print("drone land")
     drone.land()
     Drone.set_drone_LED(r=0, g=0, b=0, brightness=100, self=drone)
+    drone.stop_drone_buzzer()
+    drone.close()
     exit()
 
 
@@ -94,7 +105,15 @@ def DroneTakeoff():
 
 def DroneEmergencyStop():
     print("drone EmergencyStop")
+    Drone.set_drone_LED(r=255, g=0, b=0, brightness=100, self=drone)
     drone.emergency_stop()
+    for i in range(4):
+        drone.drone_buzzer(200, 300)
+        drone.drone_buzzer(400, 100)
+        drone.drone_buzzer(100, 300)
+        Drone.set_drone_LED(r=255, g=0, b=0, brightness=100, self=drone)
+        time.sleep(0.5)
+    Drone.set_drone_LED(r=0, g=0, b=0, brightness=100, self=drone)
 
 
 def DroneSquare():
@@ -146,18 +165,14 @@ def DroneTurnAround():
 
 
 def DroneCheckForWall():
-    CheckWall = True
-    while CheckWall:
+    while drone.get_front_range() < 60:
         if drone.get_flight_state() == ModeFlight.Ready:
-            CheckWall = False
-        elif drone.detect_wall(distance=60):
-            print("wall detected in range")
-            Drone.set_drone_LED(r=255, g=255, b=0, brightness=100, self=drone)
-            drone.move_backward(distance=2, units="cm", speed = 3)
-            DroneCheckFixHeight()
+           break
         else:
-            CheckWall = False
-            Drone.set_drone_LED(r=0, g=255, b=0, brightness=100, self=drone)
+            Drone.set_drone_LED(r=255, g=255, b=0, brightness=100, self=drone)
+            drone.move_backward(distance=2, units="cm", speed=3)
+            DroneCheckFixHeight()
+    Drone.set_drone_LED(r=0, g=255, b=0, brightness=100, self=drone)
 
 
 def DroneCheckFixHeight():
@@ -165,27 +180,47 @@ def DroneCheckFixHeight():
         if drone.get_flight_state() == ModeFlight.Ready:
             break
         else:
+            Drone.set_drone_LED(r=255, g=255, b=0, brightness=100, self=drone)
             drone.set_throttle(50)
             drone.move(0.1)
             drone.reset_move()
             DroneCheckForWall()
+    Drone.set_drone_LED(r=0, g=255, b=0, brightness=100, self=drone)
 
 
 def ListeningVoice(self):
     recording = sr.Recognizer()
     mic = sr.Microphone()
     while True:
+        print("drone battery is " + str(drone.get_battery()) + "%")
+        print("closest wall from front sensor is " + str(drone.get_front_range(unit="in")) + "in")
+        if drone.get_bottom_range(unit="in") > 0:
+            print("closest floor from bottom sensor is " + str(drone.get_bottom_range(unit="in")) + "in")
+        else:
+            print("closest floor from bottom sensor is 0 in")
+        if drone.get_flight_state() == ModeFlight.Ready:
+            print("drones current flight state is Ready")
+        else:
+            print("drones current flight state is flying")
         DroneCheckForWall()
         DroneCheckFixHeight()
+        Drone.set_drone_LED(r=255, g=60, b=0, brightness=100, self=drone)
+        print("speak")
+        drone.drone_buzzer(1000, 100)
+        drone.drone_buzzer(500, 100)
+        drone.drone_buzzer(1000, 100)
+        drone.drone_buzzer(2000, 100)
         with mic as source:
-            Drone.set_drone_LED(r=255, g=60, b=0, brightness=100, self=drone)
-            print("speak")
             audio = recording.record(source, duration=2.5)
             recording.energy_threshold = 500
             recording.pause_threshold = 0.5
         text = str(recording.recognize_google(audio, language='en-IN', show_all=True)).lower()
         print(text)
         Drone.set_drone_LED(r=0, g=0, b=0, brightness=100, self=drone)
+        drone.drone_buzzer(500, 100)
+        drone.drone_buzzer(250, 100)
+        drone.drone_buzzer(500, 100)
+        drone.drone_buzzer(1000, 100)
         for i in range(len(ListOfCommandsStr)):
            if ListOfCommandsStr[i] in text:
                Drone.set_drone_LED(r=0, g=255, b=0, brightness=100, self=drone)
@@ -198,8 +233,12 @@ def EmergencyKey(key):
         Drone.set_drone_LED(r=255, g=0, b=0, brightness=100, self=drone)
         drone.emergency_stop()
         for i in range(4):
+            drone.drone_buzzer(200, 300)
+            drone.drone_buzzer(400, 100)
+            drone.drone_buzzer(100, 300)
             Drone.set_drone_LED(r=255, g=0, b=0, brightness=100, self=drone)
             time.sleep(0.5)
+        Drone.set_drone_LED(r=0, g=0, b=0, brightness=100, self=drone)
 
 
 t1 = threading.Thread(target=EmergencyKey, args=(10,))
@@ -210,8 +249,3 @@ t2.start()
 
 with Listener(on_press=EmergencyKey) as listener:
     listener.join()
-
-
-#buzzer
-#attack
-#print out all things with drone/height and sensors and everything
