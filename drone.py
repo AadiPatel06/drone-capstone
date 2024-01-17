@@ -6,11 +6,23 @@ import time
 
 drone = Drone()
 drone.pair()
+recording = sr.Recognizer()
+mic = sr.Microphone()
+recording.energy_threshold = 500
+recording.pause_threshold = 0.5
 
 Drone.set_drone_LED(r=0, g=0, b=0, brightness=100, self=drone)
 
-ListOfCommandsStr = ["fly","forward","back","left","right","up","down","flip","land","abort","square","sway","triangle","circle","spiral","negative","positive","turn around","attack"]
-ListOfCommandsMed = ["DroneTakeoff()","DroneForward()","DroneBackward()","DroneLeftward()","DroneRightward()","DroneUpward()","DroneDownward()","DroneFlip()","DroneLand()","DroneEmergencyStop()","DroneSquare()","DroneSway()","DroneTriangle()","DroneCircle()","DroneSpiral()","DroneTurnLeft()","DroneTurnRight()","DroneTurnAround()","DroneAttack()"]
+ListOfCommandsStr = ["fly","forward","back","left","right","up","down","flip","land","abort","square","sway","triangle","circle","spiral","negative","positive","turn around","attack","get color","get info"]
+ListOfCommandsMed = ["DroneTakeoff()","DroneForward()","DroneBackward()","DroneLeftward()","DroneRightward()","DroneUpward()","DroneDownward()","DroneFlip()","DroneLand()","DroneEmergencyStop()","DroneSquare()","DroneSway()","DroneTriangle()","DroneCircle()","DroneSpiral()","DroneTurnLeft()","DroneTurnRight()","DroneTurnAround()","DroneAttack()","DroneGetColor()","DroneInfo()"]
+
+print("""----------------------------------------------------------------------------------------------------------------------------------------------------------------------------
+the list of commands are fly, forward, back, left, right, up, down, flip, land, abort, square, sway, triangle, circle, spiral, negative, positive, turn around, attack, get color, get info. 
+by saying these key words the drone will do the command, land-ends the code and fly-starts the drone up. To restart the drone land and then restart the program.
+orange means listening to voice, green means doing action, red means action or emergency land or attack command, yellow means wall or floor is detected and is moving away
+the first higher pitched beep meaning listening now, the lower pitched beep means stopped listening, beeping while red means emergency landing happened, 
+beeping while yellow means wall or floor is detected and is moving away
+----------------------------------------------------------------------------------------------------------------------------------------------------------------------------""")
 
 
 def DroneAttack():
@@ -93,6 +105,7 @@ def DroneLand():
     drone.land()
     Drone.set_drone_LED(r=0, g=0, b=0, brightness=100, self=drone)
     drone.stop_drone_buzzer()
+    time.sleep(2)
     drone.close()
     exit()
 
@@ -164,6 +177,35 @@ def DroneTurnAround():
     drone.reset_move()
 
 
+def DroneGetColor():
+    print("Drone getting colors")
+    print("drone back color is " + drone.get_back_color())
+    print("drone front color is " + drone.get_front_color())
+
+
+def DroneInfo():
+    print("Getting drone info")
+    print("-------------------------------------------------------")
+    print("drone battery is at " + str(drone.get_battery()) + "%")
+    print("closest wall from front sensor is " + str(drone.get_front_range(unit="in")) + "in")
+    if drone.get_bottom_range(unit="in") > 0:
+        print("closest floor from bottom sensor is " + str(drone.get_bottom_range(unit="in")) + "in")
+    else:
+        print("closest floor from bottom sensor is 0 in")
+    if drone.get_flight_state() == ModeFlight.Ready:
+        print("drones current flight state is Ready")
+    else:
+        print("drones current flight state is flying")
+    print("drone back color is " + drone.get_back_color())
+    print("drone front color is " + drone.get_front_color())
+    print("temperature is " + str(drone.get_temperature()) + "C")
+    print(drone.get_pos_x())
+    print(drone.get_pos_y())
+    print(drone.get_pos_z())
+    print(drone.get_position_data())
+    print("-------------------------------------------------------")
+
+
 def DroneCheckForWall():
     while drone.get_front_range() < 60:
         if drone.get_flight_state() == ModeFlight.Ready:
@@ -189,19 +231,8 @@ def DroneCheckFixHeight():
 
 
 def ListeningVoice(self):
-    recording = sr.Recognizer()
-    mic = sr.Microphone()
     while True:
-        print("drone battery is " + str(drone.get_battery()) + "%")
-        print("closest wall from front sensor is " + str(drone.get_front_range(unit="in")) + "in")
-        if drone.get_bottom_range(unit="in") > 0:
-            print("closest floor from bottom sensor is " + str(drone.get_bottom_range(unit="in")) + "in")
-        else:
-            print("closest floor from bottom sensor is 0 in")
-        if drone.get_flight_state() == ModeFlight.Ready:
-            print("drones current flight state is Ready")
-        else:
-            print("drones current flight state is flying")
+        print("drone battery is at " + str(drone.get_battery()) + "%")
         DroneCheckForWall()
         DroneCheckFixHeight()
         Drone.set_drone_LED(r=255, g=60, b=0, brightness=100, self=drone)
@@ -212,8 +243,6 @@ def ListeningVoice(self):
         drone.drone_buzzer(2000, 100)
         with mic as source:
             audio = recording.record(source, duration=2.5)
-            recording.energy_threshold = 500
-            recording.pause_threshold = 0.5
         text = str(recording.recognize_google(audio, language='en-IN', show_all=True)).lower()
         print(text)
         Drone.set_drone_LED(r=0, g=0, b=0, brightness=100, self=drone)
