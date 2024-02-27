@@ -10,22 +10,33 @@ recording = sr.Recognizer()                                                     
 mic = sr.Microphone()
 recording.energy_threshold = 500                                                                                        #sets up energy and pause thresold for recording to be smoother and easier to read in
 recording.pause_threshold = 0.5
+ToggleBuzzer = True                                                                                                     #allows buzzer ot be turned on and off
 
 Drone.set_drone_LED(r=0, g=0, b=0, brightness=100, self=drone)                                                          #resets drone LEDs incase there still on
 
 #list of commands and methods for later use in recongizing commands from mic
 #commands and methods are in the same spots in there lists so you can easily call one from the same index
-ListOfCommandsStr = ["fly","forward","back","left","right","up","down","flip","land","abort","square","sway","triangle","circle","spiral","negative","positive","turn around","attack","get color","get info"]
-ListOfCommandsMed = ["DroneTakeoff()","DroneForward()","DroneBackward()","DroneLeftward()","DroneRightward()","DroneUpward()","DroneDownward()","DroneFlip()","DroneLand()","DroneEmergencyStop()","DroneSquare()","DroneSway()","DroneTriangle()","DroneCircle()","DroneSpiral()","DroneTurnLeft()","DroneTurnRight()","DroneTurnAround()","DroneAttack()","DroneGetColor()","DroneInfo()"]
+ListOfCommandsStr = ["fly","forward","back","left","right","up","down","flip","land","abort","square","sway","triangle","circle","spiral","negative","positive","turn around","attack","get color","get info","toggle sound"]
+ListOfCommandsMed = ["DroneTakeoff()","DroneForward()","DroneBackward()","DroneLeftward()","DroneRightward()","DroneUpward()","DroneDownward()","DroneFlip()","DroneLand()","DroneEmergencyStop()","DroneSquare()","DroneSway()","DroneTriangle()","DroneCircle()","DroneSpiral()","DroneTurnLeft()","DroneTurnRight()","DroneTurnAround()","DroneAttack()","DroneGetColor()","DroneInfo()","ToggleBuzzerM()"]
 
 #print statement of commands for user
 print("""----------------------------------------------------------------------------------------------------------------------------------------------------------------------------
-the list of commands are fly, forward, back, left, right, up, down, flip, land, abort, square, sway, triangle, circle, spiral, negative, positive, turn around, attack, get color, get info. 
-by saying these key words the drone will do the command, land-ends the code and fly-starts the drone up. To restart the drone land and then restart the program.
+the list of commands are fly, forward, back, left, right, up, down, flip, land, abort, square, sway, triangle, circle, spiral, negative, positive, turn around, attack, get color, get info, toggle sound. 
+by saying these key words the drone will do the command, land-ends the code and fly-starts the drone up. To restart the drone land and then rerun the program.
 orange means listening to voice, green means doing action, red means action or emergency land or attack command, yellow means wall or floor is detected and is moving away
 the first higher pitched beep meaning listening now, the lower pitched beep means stopped listening, beeping while red means emergency landing happened, 
-beeping while yellow means wall or floor is detected and is moving away
+beeping while yellow means wall or floor is detected and is moving away.
+abort will crash land the drone.
+negative turns the drone left
+positive turns the drone right
+attack looks for closes object and flys into it
+toggle sound turns the sound off and on
 ----------------------------------------------------------------------------------------------------------------------------------------------------------------------------""")
+
+#turns the drone buzzer off and on
+def ToggleBuzzerM():
+    global ToggleBuzzer
+    ToggleBuzzer = not ToggleBuzzer
 
 
 #Drone attack command: goes in a circle looking for a object within 24ins then flys into it
@@ -138,9 +149,10 @@ def DroneEmergencyStop():
     Drone.set_drone_LED(r=255, g=0, b=0, brightness=100, self=drone)
     drone.emergency_stop()
     for i in range(4):
-        drone.drone_buzzer(200, 300)
-        drone.drone_buzzer(400, 100)
-        drone.drone_buzzer(100, 300)
+        if (ToggleBuzzer):
+            drone.drone_buzzer(200, 300)
+            drone.drone_buzzer(400, 100)
+            drone.drone_buzzer(100, 300)
         Drone.set_drone_LED(r=255, g=0, b=0, brightness=100, self=drone)
         time.sleep(0.5)
     Drone.set_drone_LED(r=0, g=0, b=0, brightness=100, self=drone)
@@ -226,10 +238,10 @@ def DroneInfo():
     print("drone back color is " + drone.get_back_color())
     print("drone front color is " + drone.get_front_color())
     print("temperature is " + str(drone.get_temperature()) + "C")
-    print(drone.get_pos_x())
-    print(drone.get_pos_y())
-    print(drone.get_pos_z())
-    print(drone.get_position_data())
+    print("x pos: " + str(drone.get_pos_x()))
+    print("y pos: " + str(drone.get_pos_y()))
+    print("z pos: " + str(drone.get_pos_z()))
+    print("pos data(xyz): " + str(drone.get_position_data()))
     print("-------------------------------------------------------")
 
 
@@ -270,19 +282,21 @@ def ListeningVoice(self):
         DroneCheckFixHeight()
         Drone.set_drone_LED(r=255, g=60, b=0, brightness=100, self=drone)
         print("speak")
-        drone.drone_buzzer(1000, 100)                                                                                   #makes a sound to tell user that drone is ready for listening
-        drone.drone_buzzer(500, 100)
-        drone.drone_buzzer(1000, 100)
-        drone.drone_buzzer(2000, 100)
+        if (ToggleBuzzer):
+            drone.drone_buzzer(1000, 100)                                                                               #makes a sound to tell user that drone is ready for listening
+            drone.drone_buzzer(500, 100)
+            drone.drone_buzzer(1000, 100)
+            drone.drone_buzzer(2000, 100)
         with mic as source:                                                                                             #uses the mic as source to listen for voice and record it as a varible called audio
             audio = recording.record(source, duration=2.5)
         text = str(recording.recognize_google(audio, language='en-IN', show_all=True)).lower()                          #turns the audio into a string and into the varible text by using the recongizer/google language and makes it all lower case
         print(text)                                                                                                     #prints out text so you can see what the program heard for your commands and if its in there and heard the right words
         Drone.set_drone_LED(r=0, g=0, b=0, brightness=100, self=drone)                                                  #turns off the led and then makes a sound to show that its done listening
-        drone.drone_buzzer(500, 100)
-        drone.drone_buzzer(250, 100)
-        drone.drone_buzzer(500, 100)
-        drone.drone_buzzer(1000, 100)
+        if (ToggleBuzzer):
+            drone.drone_buzzer(500, 100)
+            drone.drone_buzzer(250, 100)
+            drone.drone_buzzer(500, 100)
+            drone.drone_buzzer(1000, 100)
         for i in range(len(ListOfCommandsStr)):                                                                         #for loop that repeats the amount of types the lungth of the list of commands list
            if ListOfCommandsStr[i] in text:                                                                             #checks if the index in the list of commands is in the text varible of the recongized audio/what you said
                Drone.set_drone_LED(r=0, g=255, b=0, brightness=100, self=drone)
@@ -297,9 +311,10 @@ def EmergencyKey(key):
         Drone.set_drone_LED(r=255, g=0, b=0, brightness=100, self=drone)
         drone.emergency_stop()
         for i in range(4):
-            drone.drone_buzzer(200, 300)
-            drone.drone_buzzer(400, 100)
-            drone.drone_buzzer(100, 300)
+            if (ToggleBuzzer):
+                drone.drone_buzzer(200, 300)
+                drone.drone_buzzer(400, 100)
+                drone.drone_buzzer(100, 300)
             Drone.set_drone_LED(r=255, g=0, b=0, brightness=100, self=drone)
             time.sleep(0.5)
         Drone.set_drone_LED(r=0, g=0, b=0, brightness=100, self=drone)
