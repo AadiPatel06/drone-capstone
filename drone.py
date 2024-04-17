@@ -3,6 +3,9 @@ from pynput.keyboard import Key, Listener
 import threading
 import speech_recognition as sr
 import time
+import tkinter as tk
+import tkinter.font as tkFont
+
 
 drone = Drone()                                                                                                         #setsup drone and drone pairing
 drone.pair()
@@ -32,6 +35,7 @@ positive turns the drone right
 attack looks for closes object and flys into it
 toggle sound turns the sound off and on
 ----------------------------------------------------------------------------------------------------------------------------------------------------------------------------""")
+
 
 #turns the drone buzzer off and on
 def ToggleBuzzerM():
@@ -320,13 +324,218 @@ def EmergencyKey(key):
         Drone.set_drone_LED(r=0, g=0, b=0, brightness=100, self=drone)
 
 
+class App(threading.Thread):
+    def __init__(self):
+        threading.Thread.__init__(self)
+        self.start()
+
+
+    def run(self):
+        self.root = tk.Tk()
+        root = tk.Tk()
+        root.title("Voice Control Drone UI")
+        width=1000
+        height=700
+        screenwidth = root.winfo_screenwidth()
+        screenheight = root.winfo_screenheight()
+        alignstr = '%dx%d+%d+%d' % (width, height, (screenwidth - width) / 2, (screenheight - height) / 2)
+        root.geometry(alignstr)
+        root.resizable(width=False, height=False)
+
+
+        TerminalMessage=tk.Message(root)
+        ft = tkFont.Font(family='Times',size=10)
+        TerminalMessage["font"] = ft
+        TerminalMessage["fg"] = "#333333"
+        TerminalMessage["text"] = "Terminal Message Output"
+        TerminalMessage["justify"] = "center"
+        TerminalMessage.place(x=0,y=480,width=999,height=213)
+
+
+        TerminalMessageOutput=tk.Label(root)
+        ft = tkFont.Font(family='Times',size=12)
+        TerminalMessageOutput["font"] = ft
+        TerminalMessageOutput["fg"] = "#333333"
+        TerminalMessageOutput["justify"] = "center"
+        TerminalMessageOutput["text"] = "Terminal Message Output"
+        TerminalMessageOutput.place(x=0,y=440,width=160,height=49)
+        UnderLineFont = tkFont.Font(TerminalMessageOutput, TerminalMessageOutput.cget("font"))
+        UnderLineFont.configure(underline = True)
+        TerminalMessageOutput.configure(font=UnderLineFont)
+
+
+        QuitButton=tk.Button(root)
+        QuitButton["bg"] = "#f0f0f0"
+        ft = tkFont.Font(family='Times',size=10)
+        QuitButton["font"] = ft
+        QuitButton["fg"] = "#000000"
+        QuitButton["justify"] = "center"
+        QuitButton["text"] = "Quit"
+        QuitButton.place(x=890,y=0,width=110,height=73)
+        QuitButton["command"] = self.QuitButton_command
+
+
+        InstructionsLabel=tk.Label(root)
+        ft = tkFont.Font(family='Times',size=15)
+        InstructionsLabel["font"] = ft
+        InstructionsLabel["fg"] = "#333333"
+        InstructionsLabel["justify"] = "left"
+        InstructionsLabel["text"] = """The list of commands are fly, forward, back, left, right, up, down, flip, land,
+abort, square, sway, triangle, circle, spiral, negative, positive, turn around,
+attack, get color, get info, toggle sound. by saying these key words the drone 
+will do the command, land-ends the code and fly-starts the drone up. 
+To restart the drone land and then rerun the program.
+orange means listening to voice, green means doing action, 
+red means action or emergency land or attack command, 
+yellow means wall or floor is detected and is moving away
+the first higher pitched beep meaning listening now, the lower 
+pitched beep means stopped listening, beeping while red means emergency 
+landing happened, beeping while yellow means wall or floor is detected and 
+is moving away. abort will crash land the drone. negative turns the drone left, 
+positive turns the drone right attack looks for closes object and flys into it, 
+toggle sound turns the sound off and on"""
+        InstructionsLabel.place(x=-120,y=100,width=1600,height=300)
+
+
+        FlyButton = tk.Button(root)
+        FlyButton["bg"] = "#f0f0f0"
+        ft = tkFont.Font(family='Times', size=10)
+        FlyButton["font"] = ft
+        FlyButton["fg"] = "#000000"
+        FlyButton["justify"] = "center"
+        FlyButton["text"] = "Fly"
+        FlyButton.place(x=190, y=240, width=150, height=80)
+        FlyButton["command"] = self.FlyButton
+        LandButton = tk.Button(root)
+        LandButton["bg"] = "#f0f0f0"
+        ft = tkFont.Font(family='Times', size=10)
+        LandButton["font"] = ft
+        LandButton["fg"] = "#000000"
+        LandButton["justify"] = "center"
+        LandButton["text"] = "Land"
+        LandButton.place(x=20, y=30, width=150, height=80)
+        LandButton["command"] = self.LandButton
+
+
+        AbortButton=tk.Button(root)
+        AbortButton["bg"] = "#f0f0f0"
+        ft = tkFont.Font(family='Times',size=10)
+        AbortButton["font"] = ft
+        AbortButton["fg"] = "#000000"
+        AbortButton["justify"] = "center"
+        AbortButton["text"] = "Abort"
+        AbortButton.place(x=190,y=130,width=150,height=80)
+        AbortButton["command"] = self.AbortButton
+
+
+        AttackButton=tk.Button(root)
+        AttackButton["bg"] = "#f0f0f0"
+        ft = tkFont.Font(family='Times',size=10)
+        AttackButton["font"] = ft
+        AttackButton["fg"] = "#000000"
+        AttackButton["justify"] = "center"
+        AttackButton["text"] = "Attack"
+        AttackButton.place(x=20,y=130,width=150,height=80)
+        AttackButton["command"] = self.AttackButton
+
+
+        GetColorButton=tk.Button(root)
+        GetColorButton["bg"] = "#f0f0f0"
+        ft = tkFont.Font(family='Times',size=10)
+        GetColorButton["font"] = ft
+        GetColorButton["fg"] = "#000000"
+        GetColorButton["justify"] = "center"
+        GetColorButton["text"] = "Get Color"
+        GetColorButton.place(x=20,y=240,width=150,height=80)
+        GetColorButton["command"] = self.GetColorButton
+
+
+        GetInfoButton=tk.Button(root)
+        GetInfoButton["bg"] = "#f0f0f0"
+        ft = tkFont.Font(family='Times',size=10)
+        GetInfoButton["font"] = ft
+        GetInfoButton["fg"] = "#000000"
+        GetInfoButton["justify"] = "center"
+        GetInfoButton["text"] = "Get Info"
+        GetInfoButton.place(x=20,y=350,width=150,height=80)
+        GetInfoButton["command"] = self.GetInfoButton
+
+
+        TogglesSoundButton=tk.Button(root)
+        TogglesSoundButton["bg"] = "#f0f0f0"
+        ft = tkFont.Font(family='Times',size=10)
+        TogglesSoundButton["font"] = ft
+        TogglesSoundButton["fg"] = "#000000"
+        TogglesSoundButton["justify"] = "center"
+        TogglesSoundButton["text"] = "Toggle Sound"
+        TogglesSoundButton.place(x=190,y=350,width=150,height=80)
+        TogglesSoundButton["command"] = self.TogglesSoundButton
+
+
+        TurnAroundButton=tk.Button(root)
+        TurnAroundButton["bg"] = "#f0f0f0"
+        ft = tkFont.Font(family='Times',size=10)
+        TurnAroundButton["font"] = ft
+        TurnAroundButton["fg"] = "#000000"
+        TurnAroundButton["justify"] = "center"
+        TurnAroundButton["text"] = "Turn Around"
+        TurnAroundButton.place(x=190,y=30,width=150,height=80)
+        TurnAroundButton["command"] = self.TurnAroundButton
+
+
+        self.root.mainloop()
+
+
+    def QuitButton_command(self):
+        root = tk.Tk()
+        root.quit()
+
+
+    def FlyButton(self):
+        DroneTakeoff()
+
+
+    def LandButton(self):
+        DroneLand()
+
+
+    def AbortButton(self):
+        DroneEmergencyStop()
+
+
+    def AttackButton(self):
+        DroneAttack()
+
+
+    def GetColorButton(self):
+        DroneGetColor()
+
+
+    def GetInfoButton(self):
+        DroneInfo()
+
+
+    def TogglesSoundButton(self):
+        ToggleBuzzerM()
+
+
+    def TurnAroundButton(self):
+        DroneTurnAround()
+
+
+app = App()
+
+
 #makes two threads that run the emergency key method and the listeningvoice method
 t1 = threading.Thread(target=EmergencyKey, args=(10,))
 t2 = threading.Thread(target=ListeningVoice, args=(10,))
+t3 = threading.Thread(target=App)
+
 
 #sets the two threads and there methods
 t1.start()
 t2.start()
+t3.start()
 
 #uses a listener for the spce key in the emergency key method
 with Listener(on_press=EmergencyKey) as listener:
