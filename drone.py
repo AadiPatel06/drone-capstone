@@ -343,22 +343,13 @@ class App(threading.Thread):
         root.resizable(width=False, height=False)
 
 
-        TerminalMessage=tk.Message(root)
-        ft = tkFont.Font(family='Times',size=10)
-        TerminalMessage["font"] = ft
-        TerminalMessage["fg"] = "#333333"
-        TerminalMessage["text"] = "Terminal Message Output"
-        TerminalMessage["justify"] = "center"
-        TerminalMessage.place(x=0,y=480,width=999,height=213)
-
-
         TerminalMessageOutput=tk.Label(root)
         ft = tkFont.Font(family='Times',size=12)
         TerminalMessageOutput["font"] = ft
         TerminalMessageOutput["fg"] = "#333333"
         TerminalMessageOutput["justify"] = "center"
         TerminalMessageOutput["text"] = "Terminal Message Output"
-        TerminalMessageOutput.place(x=0,y=440,width=160,height=49)
+        TerminalMessageOutput.place(x=0,y=440,width=200,height=49)
         UnderLineFont = tkFont.Font(TerminalMessageOutput, TerminalMessageOutput.cget("font"))
         UnderLineFont.configure(underline = True)
         TerminalMessageOutput.configure(font=UnderLineFont)
@@ -481,6 +472,15 @@ toggle sound turns the sound off and on"""
         TurnAroundButton["text"] = "Turn Around"
         TurnAroundButton.place(x=190,y=30,width=150,height=80)
         TurnAroundButton["command"] = self.TurnAroundButton
+
+
+        TerminalMessage = tk.Message(root)
+        ft = tkFont.Font(family='Times', size=10)
+        TerminalMessage["font"] = ft
+        TerminalMessage["fg"] = "#333333"
+        TerminalMessage["text"] = "Placeholder"
+        TerminalMessage["justify"] = "center"
+        TerminalMessage.place(x=0, y=480, width=999, height=213)
 
 
         self.root.mainloop()
